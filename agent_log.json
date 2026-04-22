@@ -1,0 +1,222 @@
+[
+  {
+    "round": 0,
+    "global_metrics": {
+      "eval_acc": 0.1075,
+      "eval_loss": 2.304
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 1,
+    "global_metrics": {
+      "eval_acc": 0.1141,
+      "eval_loss": 2.3449
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 2,
+    "global_metrics": {
+      "eval_acc": 0.2223,
+      "eval_loss": 2.0878
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 3,
+    "global_metrics": {
+      "eval_acc": 0.1989,
+      "eval_loss": 2.0709
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 4,
+    "global_metrics": {
+      "eval_acc": 0.2536,
+      "eval_loss": 2.0379
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 5,
+    "global_metrics": {
+      "eval_acc": 0.2575,
+      "eval_loss": 2.0179
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 6,
+    "global_metrics": {
+      "eval_acc": 0.2557,
+      "eval_loss": 1.9792
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 7,
+    "global_metrics": {
+      "eval_acc": 0.2433,
+      "eval_loss": 2.0026
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": true,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 8,
+    "global_metrics": {
+      "eval_acc": 0.2857,
+      "eval_loss": 1.9483
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 9,
+    "global_metrics": {
+      "eval_acc": 0.2932,
+      "eval_loss": 1.924
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  },
+  {
+    "round": 10,
+    "global_metrics": {
+      "eval_acc": 0.2846,
+      "eval_loss": 1.9375
+    },
+    "decision": {
+      "selected_clients": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "stop_early": false,
+      "learning_rate": "keep",
+      "reasoning": "Fallback heuristic: selected 6 clients with lowest loss"
+    }
+  }
+]

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus — LLM-Orchestrated Federated Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:     #0d0f1a;
+    --paper:   #f5f4ef;
+    --accent:  #2d5be3;
+    --accent2: #e3452d;
+    --muted:   #6b6f80;
+    --border:  #dddbd4;
+    --code-bg: #1a1d2e;
+    --code-fg: #a8d8a8;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem;
+    height: 56px;
+    background: rgba(245,244,239,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--mono); font-size: 0.85rem; font-weight: 500;
+    color: var(--ink); text-decoration: none; letter-spacing: 0.02em;
+  }
+
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 400;
+    color: var(--muted); text-decoration: none; letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-cta {
+    font-family: var(--mono); font-size: 0.78rem;
+    background: var(--ink); color: var(--paper);
+    padding: 0.4rem 1rem; border-radius: 2px; text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.8; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 56px;
+  }
+
+  .hero-left {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 3rem 5rem 5rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+    color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--display); font-size: clamp(2.8rem, 5vw, 4.5rem);
+    font-weight: 800; line-height: 1.0; letter-spacing: -0.03em;
+    margin-bottom: 1.5rem; color: var(--ink);
+  }
+
+  .hero-title em {
+    font-style: normal; color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.7;
+    max-width: 440px; margin-bottom: 2.5rem; font-weight: 300;
+  }
+
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    font-family: var(--mono); font-size: 0.82rem;
+    background: var(--ink); color: var(--paper);
+    padding: 0.75rem 1.5rem; border-radius: 2px; text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13,15,26,0.2); }
+
+  .btn-secondary {
+    font-family: var(--mono); font-size: 0.82rem;
+    border: 1.5px solid var(--border); color: var(--ink);
+    padding: 0.75rem 1.5rem; border-radius: 2px; text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-secondary:hover { border-color: var(--ink); background: rgba(13,15,26,0.04); }
+
+  .hero-right {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 3rem;
+    background: var(--ink);
+    position: relative; overflow: hidden;
+  }
+
+  .hero-right::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 30%, rgba(45,91,227,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .terminal {
+    font-family: var(--mono); font-size: 0.8rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px; padding: 1.5rem;
+    color: #aab4c8; position: relative;
+  }
+
+  .terminal-bar {
+    display: flex; gap: 6px; margin-bottom: 1.2rem;
+  }
+  .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .td-r { background: #ff5f57; }
+  .td-y { background: #febc2e; }
+  .td-g { background: #28c840; }
+
+  .terminal-line { margin-bottom: 0.4rem; line-height: 1.6; }
+  .t-prompt { color: #4a6cf7; }
+  .t-cmd    { color: #e8eaf0; }
+  .t-comment{ color: #4a5070; }
+  .t-green  { color: var(--code-fg); }
+  .t-yellow { color: #f0d080; }
+  .t-dim    { color: #3a4060; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; margin-top: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px; overflow: hidden;
+  }
+
+  .stat-cell {
+    background: rgba(255,255,255,0.03);
+    padding: 1rem 1.2rem;
+  }
+  .stat-num {
+    font-family: var(--display); font-size: 1.8rem; font-weight: 800;
+    color: #e8eaf0; line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono); font-size: 0.65rem;
+    color: #4a5880; text-transform: uppercase; letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 6rem 5rem; }
+  section:nth-child(even) { background: #fff; }
+
+  .section-tag {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+    color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 0.75rem; display: block;
+  }
+
+  .section-title {
+    font-family: var(--display); font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .section-sub {
+    font-size: 1rem; color: var(--muted); max-width: 520px;
+    line-height: 1.7; margin-bottom: 3rem; font-weight: 300;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0; border: 1px solid var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+
+  .step {
+    padding: 2rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .step:last-child { border-right: none; }
+
+  .step-num {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--accent); letter-spacing: 0.1em;
+    margin-bottom: 1rem; display: block;
+  }
+
+  .step-title {
+    font-family: var(--display); font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  .step-body { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+  /* ── AGENT DECISION ── */
+  .agent-layout {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
+    align-items: start;
+  }
+
+  .agent-desc h3 {
+    font-family: var(--display); font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .agent-desc p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+
+  .agent-features { list-style: none; margin-top: 1.5rem; }
+  .agent-features li {
+    font-size: 0.88rem; padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 0.75rem;
+  }
+  .agent-features li:last-child { border-bottom: none; }
+  .feat-icon { color: var(--accent); font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code-bg); border-radius: 6px;
+    padding: 1.5rem; overflow-x: auto;
+    font-family: var(--mono); font-size: 0.78rem;
+    line-height: 1.7; color: #aab4c8;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .code-block .kw  { color: #7aa2f7; }
+  .code-block .str { color: #9ece6a; }
+  .code-block .cmt { color: #4a5568; font-style: italic; }
+  .code-block .key { color: #e0af68; }
+  .code-block .val { color: #f7768e; }
+  .code-block .fn  { color: #bb9af7; }
+
+  /* ── SETUP ── */
+  .setup-steps { counter-reset: setup; }
+  .setup-step {
+    counter-increment: setup;
+    display: grid; grid-template-columns: 48px 1fr;
+    gap: 1.5rem; margin-bottom: 2rem; align-items: start;
+  }
+  .setup-step-num {
+    width: 48px; height: 48px; border-radius: 2px;
+    background: var(--ink); color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.9rem; font-weight: 500;
+    flex-shrink: 0;
+  }
+  .setup-step-content h4 {
+    font-family: var(--display); font-size: 1rem; font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .setup-step-content p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .setup-step-content .code-block { margin-top: 0.5rem; }
+
+  .callout {
+    background: #fffbeb; border-left: 3px solid #f0d080;
+    padding: 0.9rem 1.2rem; border-radius: 0 4px 4px 0;
+    font-size: 0.85rem; color: #6b5800; margin-top: 0.75rem;
+  }
+
+  /* ── EXPERIMENTS ── */
+  .exp-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; margin-bottom: 2rem;
+  }
+
+  .exp-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 1.5rem; position: relative; overflow: hidden;
+  }
+
+  .exp-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent);
+  }
+
+  .exp-card.hw8::before { background: var(--accent2); }
+
+  .exp-badge {
+    font-family: var(--mono); font-size: 0.65rem;
+    color: var(--muted); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 0.5rem; display: block;
+  }
+
+  .exp-card h3 {
+    font-family: var(--display); font-size: 1rem; font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  .exp-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+
+  .exp-result {
+    background: var(--paper);
+    border-radius: 2px; padding: 0.6rem 0.8rem;
+    font-family: var(--mono); font-size: 0.78rem; color: var(--ink);
+  }
+
+  .result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.25rem 0; border-bottom: 1px solid var(--border);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-val { font-weight: 500; color: var(--accent); }
+  .result-val.neg { color: var(--accent2); }
+
+  .big-finding {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 2rem; background: var(--ink); color: var(--paper);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+    align-items: center;
+  }
+
+  .big-finding h3 {
+    font-family: var(--display); font-size: 1.4rem; font-weight: 800;
+    line-height: 1.2; margin-bottom: 0.75rem;
+  }
+
+  .big-finding p { font-size: 0.88rem; color: #8892a4; line-height: 1.7; }
+
+  .finding-metric {
+    text-align: right;
+  }
+  .metric-big {
+    font-family: var(--display); font-size: 3.5rem; font-weight: 800;
+    color: var(--accent2); line-height: 1;
+  }
+  .metric-label {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: #4a5880; text-transform: uppercase; letter-spacing: 0.1em;
+    margin-top: 0.4rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink); color: #4a5880;
+    padding: 3rem 5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .footer-left { font-family: var(--mono); font-size: 0.78rem; }
+  .footer-left strong { color: #8892a4; }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a {
+    font-family: var(--mono); font-size: 0.75rem;
+    color: #4a5880; text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: #8892a4; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-tag  { animation: fadeUp 0.5s ease both; }
+  .hero-title{ animation: fadeUp 0.5s 0.1s ease both; }
+  .hero-sub  { animation: fadeUp 0.5s 0.2s ease both; }
+  .hero-actions { animation: fadeUp 0.5s 0.3s ease both; }
+  .terminal  { animation: fadeUp 0.6s 0.2s ease both; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .hero-left { padding: 4rem 2rem; border-right: none; }
+    section { padding: 4rem 2rem; }
+    .steps { grid-template-columns: 1fr; }
+    .step { border-right: none; border-bottom: 1px solid var(--border); }
+    .agent-layout { grid-template-columns: 1fr; }
+    .exp-grid { grid-template-columns: 1fr; }
+    .big-finding { grid-template-columns: 1fr; }
+    .finding-metric { text-align: left; }
+    footer { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    nav { padding: 0 1.5rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">nexus-fl</a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#experiments">Results</a></li>
+  </ul>
+  <a href="https://github.com/YOUR_USERNAME/nexus-fl" class="nav-cta" target="_blank">GitHub →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" style="padding:0;">
+  <div class="hero-left">
+    <span class="hero-tag">MIT Media Lab · MAS.664 AI Studio · Spring 2026</span>
+    <h1 class="hero-title">Federated<br>learning,<br><em>orchestrated</em><br>by an LLM.</h1>
+    <p class="hero-sub">
+      Nexus wraps a Flower federated learning setup with a Claude-powered agent that decides
+      which clients train each round, stops early when progress stalls, and logs every decision
+      for full auditability.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/YOUR_USERNAME/nexus-fl" class="btn-primary" target="_blank">
+        ↗ View on GitHub
+      </a>
+      <a href="#setup" class="btn-secondary">
+        Get started
+      </a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot td-r"></div>
+        <div class="terminal-dot td-y"></div>
+        <div class="terminal-dot td-g"></div>
+      </div>
+      <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">flwr run . --stream</span></div>
+      <div class="terminal-line t-dim">─────────────────────────────────</div>
+      <div class="terminal-line"><span class="t-yellow">Round 1</span> <span class="t-dim">| clients available: 10</span></div>
+      <div class="terminal-line"><span class="t-green">  Agent →</span> selected [0, 3, 7, 2, 9]</div>
+      <div class="terminal-line t-dim">  reasoning: "Client 3 has higher</div>
+      <div class="terminal-line t-dim">  accuracy on prior rounds..."</div>
+      <div class="terminal-line"><span class="t-yellow">Round 2</span> <span class="t-dim">| acc=0.4823 loss=1.32</span></div>
+      <div class="terminal-line"><span class="t-green">  Agent →</span> selected [3, 7, 1, 6, 4]</div>
+      <div class="terminal-line t-dim">  strategy: reliability</div>
+      <div class="terminal-line"><span class="t-yellow">Round 3</span> <span class="t-dim">| acc=0.5104 loss=1.18</span></div>
+      <div class="terminal-line"><span class="t-green">  Agent →</span> <span class="t-dim">stop_early: false</span></div>
+      <div class="terminal-line t-dim">─────────────────────────────────</div>
+      <div class="terminal-line"><span class="t-green">✓</span> <span class="t-dim">Logged to agent_log.json</span></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-cell">
+        <div class="stat-num">30+</div>
+        <div class="stat-label">Clients tested</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Experiments</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">21%</div>
+        <div class="stat-label">Fewer failures</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">40%</div>
+        <div class="stat-label">Less comm. cost</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <span class="section-tag">Architecture</span>
+  <h2 class="section-title">How Nexus works</h2>
+  <p class="section-sub">
+    A thin intelligence layer on top of standard Flower FL — no changes to your model or training loop.
+  </p>
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">01 — Each round</span>
+      <h3 class="step-title">Server calls the agent</h3>
+      <p class="step-body">
+        After local training completes, <code>server_app.py</code> passes the available client list,
+        per-client accuracy history, and failure counts to the Nexus agent via the <code>evaluate_fn</code> callback.
+      </p>
+    </div>
+    <div class="step">
+      <span class="step-num">02 — Agent decides</span>
+      <h3 class="step-title">Claude reasons over clients</h3>
+      <p class="step-body">
+        The agent (Claude API or heuristic fallback) returns a structured JSON decision:
+        which clients to select, whether to stop early, and a natural-language reasoning string
+        explaining the choice.
+      </p>
+    </div>
+    <div class="step">
+      <span class="step-num">03 — Logged & visualized</span>
+      <h3 class="step-title">Every decision is auditable</h3>
+      <p class="step-body">
+        Decisions are appended to <code>agent_log.json</code>. The Streamlit dashboard reads this file
+        every 3 seconds and renders accuracy curves, client selection history, and agent reasoning
+        in real time.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT -->
+<section style="background:#fff;" id="agent">
+  <span class="section-tag">Agent</span>
+  <h2 class="section-title">What the agent sees</h2>
+  <p class="section-sub">Each round, the agent receives structured client metadata and returns an actionable JSON decision.</p>
+  <div class="agent-layout">
+    <div class="agent-desc">
+      <h3>Context in → Decision out</h3>
+      <p>The agent prompt includes: round number, available client IDs, which classes each client holds (for non-IID setups), per-client accuracy contributions from previous rounds, and cumulative failure counts.</p>
+      <p>It returns a selection list, an early-stopping flag, a strategy label, and a plain-English reasoning string — all logged for auditability.</p>
+      <ul class="agent-features">
+        <li><span class="feat-icon">▸</span> Claude API for language-model reasoning</li>
+        <li><span class="feat-icon">▸</span> Heuristic fallback — works with no API key</li>
+        <li><span class="feat-icon">▸</span> Structured JSON output, validated each round</li>
+        <li><span class="feat-icon">▸</span> Full decision trail in <code>agent_log.json</code></li>
+        <li><span class="feat-icon">▸</span> Live Streamlit dashboard — no setup needed</li>
+      </ul>
+    </div>
+    <div class="code-block">
+<span class="cmt"># Agent response — every round</span>
+{
+  <span class="key">"selected_clients"</span>: [<span class="val">0, 3, 7, 2, 9</span>],
+  <span class="key">"stop_early"</span>: <span class="val">false</span>,
+  <span class="key">"reasoning"</span>: <span class="str">"Clients 0 and 3 showed
+    consistent accuracy gains.
+    Excluding client 5 — 3 failures
+    in last 4 rounds. Prioritizing
+    class diversity: selected set
+    covers 8 of 10 CIFAR classes."</span>,
+  <span class="key">"strategy"</span>: <span class="str">"reliability"</span>
+}
+
+<span class="cmt"># Logged to agent_log.json</span>
+<span class="cmt"># Rendered in Streamlit dashboard</span>
+<span class="cmt"># Readable by humans, parseable by code</span>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <span class="section-tag">Setup</span>
+  <h2 class="section-title">Get running in 4 steps</h2>
+  <p class="section-sub">Nexus extends the Flower PyTorch quickstart. If you've run Flower before, this will feel familiar.</p>
+
+  <div class="setup-steps">
+    <div class="setup-step">
+      <div class="setup-step-num">1</div>
+      <div class="setup-step-content">
+        <h4>Clone and install</h4>
+        <p>Clone the repo and install dependencies. Python 3.10–3.11 recommended.</p>
+        <div class="code-block">git clone https://github.com/YOUR_USERNAME/nexus-fl.git
+cd nexus-fl
+pip install flwr[simulation] torch torchvision anthropic streamlit</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">2</div>
+      <div class="setup-step-content">
+        <h4>Set your API key (optional)</h4>
+        <p>Without a key, Nexus uses a diversity-weighted heuristic. The system still runs — you just won't get LLM reasoning in the logs.</p>
+        <div class="code-block">export ANTHROPIC_API_KEY=your_key_here</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">3</div>
+      <div class="setup-step-content">
+        <h4>Run the FL system</h4>
+        <p>Start the Flower simulation in one terminal.</p>
+        <div class="code-block">flwr run . --stream</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">4</div>
+      <div class="setup-step-content">
+        <h4>Open the dashboard</h4>
+        <p>In a second terminal, launch Streamlit. It auto-refreshes every 3 seconds.</p>
+        <div class="code-block">streamlit run dashboard.py
+# → open http://localhost:8501</div>
+        <div class="callout">
+          💡 <strong>Known gotchas:</strong> <code>grid.get_node_ids()</code> returns a set — use <code>sorted()</code> before indexing.
+          <code>evaluate_fn</code> belongs in <code>strategy.start()</code>, not in <code>FedAvg()</code>.
+          See the README for the full list.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIMENTS -->
+<section id="experiments" style="background:#fff;">
+  <span class="section-tag">Results</span>
+  <h2 class="section-title">Experiment findings</h2>
+  <p class="section-sub">Four experiments across two homework assignments. Honest results — including the null results.</p>
+
+  <div class="exp-grid">
+    <div class="exp-card">
+      <span class="exp-badge">HW7 · Experiment 1</span>
+      <h3>Agent vs Random — IID Data</h3>
+      <p>10 clients, IID CIFAR-10, 15 rounds. Tests whether the agent outperforms random selection when all clients are equally useful.</p>
+      <div class="exp-result">
+        <div class="result-row">
+          <span>Random accuracy</span><span class="result-val">~50%</span>
+        </div>
+        <div class="result-row">
+          <span>Agent accuracy</span><span class="result-val">~50%</span>
+        </div>
+        <div class="result-row">
+          <span>Agent advantage</span><span class="result-val neg">0% — null result</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-card">
+      <span class="exp-badge">HW7 · Experiment 2</span>
+      <h3>Early Stopping Strategies</h3>
+      <p>Aggressive (patience=2) vs conservative (patience=4) early stopping. Tests whether the agent can detect when to terminate training.</p>
+      <div class="exp-result">
+        <div class="result-row">
+          <span>Aggressive triggered</span><span class="result-val neg">No</span>
+        </div>
+        <div class="result-row">
+          <span>Conservative triggered</span><span class="result-val neg">No</span>
+        </div>
+        <div class="result-row">
+          <span>Final accuracy (both)</span><span class="result-val">54.86%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-card">
+      <span class="exp-badge">HW7 · Experiment 3</span>
+      <h3>Pool Size vs Accuracy</h3>
+      <p>Sweep 3 / 6 / 10 clients per round. Tests the communication-accuracy tradeoff.</p>
+      <div class="exp-result">
+        <div class="result-row">
+          <span>6 clients accuracy</span><span class="result-val">50.86%</span>
+        </div>
+        <div class="result-row">
+          <span>10 clients accuracy</span><span class="result-val">51.03%</span>
+        </div>
+        <div class="result-row">
+          <span>Comm. cost saved</span><span class="result-val">40% with &lt;1% drop</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-card hw8">
+      <span class="exp-badge">HW8 · Experiment 4</span>
+      <h3>30 Clients, Non-IID, 15% Failures</h3>
+      <p>Scaled stress test: 30 clients each holding 2 CIFAR-10 classes, with random dropout each round.</p>
+      <div class="exp-result">
+        <div class="result-row">
+          <span>Random final accuracy</span><span class="result-val">15.05%</span>
+        </div>
+        <div class="result-row">
+          <span>Agent final accuracy</span><span class="result-val neg">10.48%</span>
+        </div>
+        <div class="result-row">
+          <span>Agent failures vs random</span><span class="result-val">21% fewer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="big-finding">
+    <div>
+      <h3>The diversity heuristic backfired.</h3>
+      <p>
+        Selecting clients with rare classes sounds smart — but those clients often hold too few samples
+        to produce reliable gradient updates. The heuristic optimized for class coverage without
+        accounting for per-class data volume. Full LLM mode (Claude API reasoning) remains untested
+        at this scale and is the clear next step.
+      </p>
+    </div>
+    <div class="finding-metric">
+      <div class="metric-big">−35%</div>
+      <div class="metric-label">Accuracy drop<br>IID → non-IID at 30 clients</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <strong>Nexus</strong> — LLM-Orchestrated Federated Learning<br>
+    Tung Nguyen · MIT Media Lab · MAS.664 AI Studio · Spring 2026
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/YOUR_USERNAME/nexus-fl" target="_blank">GitHub</a>
+    <a href="https://flower.ai" target="_blank">Flower</a>
+    <a href="https://docs.anthropic.com" target="_blank">Claude API</a>
+  </div>
+</footer>
+
+</body>
+</html>
